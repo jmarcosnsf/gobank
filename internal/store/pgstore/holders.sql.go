@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/shopspring/decimal"
 )
 
 const createCompanyHolder = `-- name: CreateCompanyHolder :one
@@ -19,14 +20,14 @@ RETURNING id
 `
 
 type CreateCompanyHolderParams struct {
-	TradeName      string         `json:"trade_name"`
-	Cnpj           string         `json:"cnpj"`
-	FoundedAt      pgtype.Date    `json:"founded_at"`
-	CorporateEmail string         `json:"corporate_email"`
-	Phone          string         `json:"phone"`
-	Category       pgtype.Text    `json:"category"`
-	AnnualRevenue  pgtype.Numeric `json:"annual_revenue"`
-	PasswordHash   []byte         `json:"password_hash"`
+	TradeName      string              `json:"trade_name"`
+	Cnpj           string              `json:"cnpj"`
+	FoundedAt      pgtype.Date         `json:"founded_at"`
+	CorporateEmail string              `json:"corporate_email"`
+	Phone          string              `json:"phone"`
+	Category       pgtype.Text         `json:"category"`
+	AnnualRevenue  decimal.NullDecimal `json:"annual_revenue"`
+	PasswordHash   []byte              `json:"password_hash"`
 }
 
 func (q *Queries) CreateCompanyHolder(ctx context.Context, arg CreateCompanyHolderParams) (uuid.UUID, error) {
@@ -52,14 +53,14 @@ RETURNING id
 `
 
 type CreateIndividualHolderParams struct {
-	FullName      string         `json:"full_name"`
-	Cpf           string         `json:"cpf"`
-	DateOfBirth   pgtype.Date    `json:"date_of_birth"`
-	Email         string         `json:"email"`
-	Phone         string         `json:"phone"`
-	Category      pgtype.Text    `json:"category"`
-	MonthlyIncome pgtype.Numeric `json:"monthly_income"`
-	PasswordHash  []byte         `json:"password_hash"`
+	FullName      string              `json:"full_name"`
+	Cpf           string              `json:"cpf"`
+	DateOfBirth   pgtype.Date         `json:"date_of_birth"`
+	Email         string              `json:"email"`
+	Phone         string              `json:"phone"`
+	Category      pgtype.Text         `json:"category"`
+	MonthlyIncome decimal.NullDecimal `json:"monthly_income"`
+	PasswordHash  []byte              `json:"password_hash"`
 }
 
 func (q *Queries) CreateIndividualHolder(ctx context.Context, arg CreateIndividualHolderParams) (uuid.UUID, error) {

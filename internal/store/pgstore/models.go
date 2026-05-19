@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/shopspring/decimal"
 )
 
 type AccountStatus string
@@ -153,27 +154,27 @@ type Account struct {
 }
 
 type CompanyHolder struct {
-	ID             uuid.UUID      `json:"id"`
-	TradeName      string         `json:"trade_name"`
-	Cnpj           string         `json:"cnpj"`
-	FoundedAt      pgtype.Date    `json:"founded_at"`
-	CorporateEmail string         `json:"corporate_email"`
-	Phone          string         `json:"phone"`
-	Category       pgtype.Text    `json:"category"`
-	AnnualRevenue  pgtype.Numeric `json:"annual_revenue"`
-	PasswordHash   []byte         `json:"password_hash"`
-	CreatedAt      time.Time      `json:"created_at"`
+	ID             uuid.UUID           `json:"id"`
+	TradeName      string              `json:"trade_name"`
+	Cnpj           string              `json:"cnpj"`
+	FoundedAt      pgtype.Date         `json:"founded_at"`
+	CorporateEmail string              `json:"corporate_email"`
+	Phone          string              `json:"phone"`
+	Category       pgtype.Text         `json:"category"`
+	AnnualRevenue  decimal.NullDecimal `json:"annual_revenue"`
+	PasswordHash   []byte              `json:"password_hash"`
+	CreatedAt      time.Time           `json:"created_at"`
 }
 
 type IndividualHolder struct {
-	ID            uuid.UUID      `json:"id"`
-	FullName      string         `json:"full_name"`
-	Cpf           string         `json:"cpf"`
-	DateOfBirth   pgtype.Date    `json:"date_of_birth"`
-	Email         string         `json:"email"`
-	Phone         string         `json:"phone"`
-	Category      pgtype.Text    `json:"category"`
-	MonthlyIncome pgtype.Numeric `json:"monthly_income"`
-	PasswordHash  []byte         `json:"password_hash"`
-	CreatedAt     time.Time      `json:"created_at"`
+	ID            uuid.UUID           `json:"id"`
+	FullName      string              `json:"full_name"`
+	Cpf           string              `json:"cpf"`
+	DateOfBirth   pgtype.Date         `json:"date_of_birth"`
+	Email         string              `json:"email"`
+	Phone         string              `json:"phone"`
+	Category      pgtype.Text         `json:"category"`
+	MonthlyIncome decimal.NullDecimal `json:"monthly_income"`
+	PasswordHash  []byte              `json:"password_hash"`
+	CreatedAt     time.Time           `json:"created_at"`
 }

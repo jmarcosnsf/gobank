@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmarcosnsf/gobank/internal/api"
+	"github.com/jmarcosnsf/gobank/internal/services"
 	"github.com/joho/godotenv"
 )
 
@@ -43,6 +44,7 @@ func main() {
 	api := api.Api{
 		Router: chi.NewRouter(),
 		Sessions: s,
+		HolderService: services.NewHolderService(pool),
 	}
 
 	api.BindRoutes()
