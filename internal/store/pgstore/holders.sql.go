@@ -78,3 +78,35 @@ func (q *Queries) CreateIndividualHolder(ctx context.Context, arg CreateIndividu
 	err := row.Scan(&id)
 	return id, err
 }
+
+const getCompanyHolderByEmail = `-- name: GetCompanyHolderByEmail :one
+SELECT id, password_hash FROM company_holder WHERE corporate_email = $1
+`
+
+type GetCompanyHolderByEmailRow struct {
+	ID           uuid.UUID `json:"id"`
+	PasswordHash []byte    `json:"password_hash"`
+}
+
+func (q *Queries) GetCompanyHolderByEmail(ctx context.Context, corporateEmail string) (GetCompanyHolderByEmailRow, error) {
+	row := q.db.QueryRow(ctx, getCompanyHolderByEmail, corporateEmail)
+	var i GetCompanyHolderByEmailRow
+	err := row.Scan(&i.ID, &i.PasswordHash)
+	return i, err
+}
+
+const getIndividualHolderByEmail = `-- name: GetIndividualHolderByEmail :one
+SELECT id, password_hash FROM individual_holder WHERE email = $1
+`
+
+type GetIndividualHolderByEmailRow struct {
+	ID           uuid.UUID `json:"id"`
+	PasswordHash []byte    `json:"password_hash"`
+}
+
+func (q *Queries) GetIndividualHolderByEmail(ctx context.Context, email string) (GetIndividualHolderByEmailRow, error) {
+	row := q.db.QueryRow(ctx, getIndividualHolderByEmail, email)
+	var i GetIndividualHolderByEmailRow
+	err := row.Scan(&i.ID, &i.PasswordHash)
+	return i, err
+}

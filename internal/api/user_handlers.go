@@ -36,11 +36,11 @@ func (api *Api) handleSignup(w http.ResponseWriter, r *http.Request) {
 		data.Password,
 	)
 	if err != nil {
-		if errors.Is(err, services.ErrDuplicateEmailOrCpf){
+		if errors.Is(err, services.ErrDuplicateEmailOrCpf) {
 			jsonutils.EncondeJson(w, r, http.StatusConflict, map[string]any{"error": "cpf or email already exists"})
 			return
 		}
-		jsonutils.EncondeJson(w,r,http.StatusInternalServerError, map[string]any{"error": "something went wrong"})
+		jsonutils.EncondeJson(w, r, http.StatusInternalServerError, map[string]any{"error": "something went wrong"})
 		return
 	}
 
@@ -48,5 +48,36 @@ func (api *Api) handleSignup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *Api) handleLogin(w http.ResponseWriter, r *http.Request) {
-	// TO BE IMPLEMENTED
+	data, problems, err := jsonutils.DecodeValidJson[holder.LoginReq](r)
+	if err != nil {
+		jsonutils.EncondeJson(w, r, http.StatusUnprocessableEntity, problems)
+		return
+	}
+
+	id, holderType, err := api.HolderService.Authenticate(r.Context(), data.Email, data.Password)
+	if err != nil {
+		if errors.Is(err, services.ErrInvalidCredentials) {
+			jsonutils.EncondeJson(w, r, http.StatusBadRequest, map[string]any{"error": "invalid email or password"})
+			return
+		}
+
+		jsonutils.EncondeJson(w, r, http.StatusInternalServerError, map[string]any{"error": "something went wrong"})
+		return
+	}
+
+	if err := api.Sessions.RenewToken(r.Context()); err != nil {
+		jsonutils.EncondeJson(w, r, http.StatusInternalServerError, map[string]any{"error": "something went wrong"})
+		return
+	}
+
+	api.Sessions.Put(r.Context(), "holder_id", id.String())
+	api.Sessions.Put(r.Context(), "holder_type", string(holderType))
+
+	jsonutils.EncondeJson(w, r, http.StatusOK, map[string]any{"message": "succesfully logged in"})
+}
+
+func (api *Api) handleLogout(w http.ResponseWriter, r *http.Request) {
+	api.Sessions.Destroy(r.Context())
+
+	jsonutils.EncondeJson(w, r, http.StatusOK, map[string]any{"message": "sucessfully logged out"})
 }
