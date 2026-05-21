@@ -11,7 +11,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func (api *Api) handleSignup(w http.ResponseWriter, r *http.Request) {
+func (api *Api) handleSignupIndividual(w http.ResponseWriter, r *http.Request) {
 	data, problems, err := jsonutils.DecodeValidJson[holder.CreateIndividualReq](r)
 	if err != nil {
 		jsonutils.EncondeJson(w, r, http.StatusUnprocessableEntity, problems)
@@ -80,4 +80,40 @@ func (api *Api) handleLogout(w http.ResponseWriter, r *http.Request) {
 	api.Sessions.Destroy(r.Context())
 
 	jsonutils.EncondeJson(w, r, http.StatusOK, map[string]any{"message": "sucessfully logged out"})
+}
+
+func (api *Api) handleSignupCompany(w http.ResponseWriter, r *http.Request) {
+	data, problems, err := jsonutils.DecodeValidJson[holder.CreateCompanyReq](r)
+	if err != nil {
+		jsonutils.EncondeJson(w, r, http.StatusUnprocessableEntity, problems)
+		return
+	}
+
+	foundedAt, err := time.Parse("2006-01-02", data.FoundedAt)
+	if err != nil {
+		jsonutils.EncondeJson(w, r, http.StatusUnprocessableEntity, map[string]any{"error": "invalid date format"})
+		return
+	}
+
+	id, err := api.HolderService.CreateCompanyHolder(
+		r.Context(),
+		data.TradeName,
+		data.Cnpj,
+		data.CorporateEmail,
+		data.Phone,
+		data.Category,
+		foundedAt,
+		decimal.NewFromFloat(data.AnnualRevenue),
+		data.Password,
+	)
+	if err != nil {
+		if errors.Is(err, services.ErrDuplicateEmailOrCnpj) {
+			jsonutils.EncondeJson(w, r, http.StatusConflict, map[string]any{"error": "cnpj or email already exists"})
+			return
+		}
+		jsonutils.EncondeJson(w, r, http.StatusInternalServerError, map[string]any{"error": "something went wrong"})
+		return
+	}
+
+	jsonutils.EncondeJson(w, r, http.StatusCreated, map[string]any{"holder_id": id})
 }

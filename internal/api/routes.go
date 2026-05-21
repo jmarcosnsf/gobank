@@ -10,7 +10,8 @@ func (api *Api) BindRoutes() {
 
 	api.Router.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router){
-			r.Post("/signup", api.handleSignup)
+			r.Post("/signup/individual", api.handleSignupIndividual)
+			r.Post("/signup/company", api.handleSignupCompany)
 			r.Post("/login", api.handleLogin)
 			r.Post("/logout", api.handleLogout)
 		})

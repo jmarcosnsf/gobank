@@ -16,7 +16,9 @@ import (
 )
 var(
 	ErrDuplicateEmailOrCpf = errors.New("cpf or email already exists")
+	ErrDuplicateEmailOrCnpj = errors.New("cnpj or email already exists")
 	ErrInvalidCredentials = errors.New("invalid credentials")
+	
 )
 type HolderService struct {
 	pool *pgxpool.Pool
@@ -96,4 +98,39 @@ func(hs *HolderService) Authenticate(ctx context.Context, email, password string
 	}
 
 	return uuid.UUID{}, "", err
+}
+
+func (hs *HolderService) CreateCompanyHolder(
+	ctx context.Context,
+	tradeName, cnpj, corporateEmail, phone, category string,
+	foundedAt time.Time,
+	annualRevenue decimal.Decimal,
+	password string,
+) (uuid.UUID, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	args := pgstore.CreateCompanyHolderParams{
+		TradeName:      tradeName,
+		Cnpj:           cnpj,
+		FoundedAt:      pgtype.Date{Time: foundedAt, Valid: true},
+		CorporateEmail: corporateEmail,
+		Phone:          phone,
+		Category:       pgtype.Text{String: category, Valid: true},
+		AnnualRevenue:  decimal.NullDecimal{Decimal: annualRevenue, Valid: true},
+		PasswordHash:   hash,
+	}
+
+	id, err := hs.queries.CreateCompanyHolder(ctx, args)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return uuid.UUID{}, ErrDuplicateEmailOrCnpj
+		}
+		return uuid.UUID{}, err
+	}
+
+	return id, nil
 }
