@@ -18,8 +18,8 @@ var(
 	ErrDuplicateEmailOrCpf = errors.New("cpf or email already exists")
 	ErrDuplicateEmailOrCnpj = errors.New("cnpj or email already exists")
 	ErrInvalidCredentials = errors.New("invalid credentials")
-	
 )
+
 type HolderService struct {
 	pool *pgxpool.Pool
 	queries *pgstore.Queries

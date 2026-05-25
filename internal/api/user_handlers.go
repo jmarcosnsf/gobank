@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -61,6 +62,7 @@ func (api *Api) handleLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		slog.Error("login failed", "error", err)
 		jsonutils.EncondeJson(w, r, http.StatusInternalServerError, map[string]any{"error": "something went wrong"})
 		return
 	}

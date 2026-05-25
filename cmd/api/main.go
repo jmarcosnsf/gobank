@@ -45,6 +45,7 @@ func main() {
 		Router: chi.NewRouter(),
 		Sessions: s,
 		HolderService: services.NewHolderService(pool),
+		AccountService: services.NewAccountService(pool),
 	}
 
 	api.BindRoutes()

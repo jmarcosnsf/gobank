@@ -147,7 +147,7 @@ type Account struct {
 	IndividualHolderID pgtype.UUID        `json:"individual_holder_id"`
 	CompanyHolderID    pgtype.UUID        `json:"company_holder_id"`
 	HolderType         HolderType         `json:"holder_type"`
-	Balance            pgtype.Numeric     `json:"balance"`
+	Balance            decimal.Decimal    `json:"balance"`
 	Status             AccountStatus      `json:"status"`
 	CreatedAt          time.Time          `json:"created_at"`
 	ClosedAt           pgtype.Timestamptz `json:"closed_at"`
@@ -177,4 +177,10 @@ type IndividualHolder struct {
 	MonthlyIncome decimal.NullDecimal `json:"monthly_income"`
 	PasswordHash  []byte              `json:"password_hash"`
 	CreatedAt     time.Time           `json:"created_at"`
+}
+
+type Session struct {
+	Token  string    `json:"token"`
+	Data   []byte    `json:"data"`
+	Expiry time.Time `json:"expiry"`
 }

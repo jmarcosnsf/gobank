@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/shopspring/decimal"
 )
 
 const createAccount = `-- name: CreateAccount :one
@@ -29,4 +30,33 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (u
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
+}
+
+const getAccountByID = `-- name: GetAccountByID :one
+SELECT id, individual_holder_id, company_holder_id, holder_type, balance, status
+FROM account
+WHERE id = $1
+`
+
+type GetAccountByIDRow struct {
+	ID                 uuid.UUID       `json:"id"`
+	IndividualHolderID pgtype.UUID     `json:"individual_holder_id"`
+	CompanyHolderID    pgtype.UUID     `json:"company_holder_id"`
+	HolderType         HolderType      `json:"holder_type"`
+	Balance            decimal.Decimal `json:"balance"`
+	Status             AccountStatus   `json:"status"`
+}
+
+func (q *Queries) GetAccountByID(ctx context.Context, id uuid.UUID) (GetAccountByIDRow, error) {
+	row := q.db.QueryRow(ctx, getAccountByID, id)
+	var i GetAccountByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.IndividualHolderID,
+		&i.CompanyHolderID,
+		&i.HolderType,
+		&i.Balance,
+		&i.Status,
+	)
+	return i, err
 }
