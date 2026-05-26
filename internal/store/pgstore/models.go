@@ -184,3 +184,12 @@ type Session struct {
 	Data   []byte    `json:"data"`
 	Expiry time.Time `json:"expiry"`
 }
+
+type Transaction struct {
+	ID                    uuid.UUID       `json:"id"`
+	AccountID             uuid.UUID       `json:"account_id"`
+	Type                  TransactionType `json:"type"`
+	Amount                decimal.Decimal `json:"amount"`
+	CounterpartyAccountID pgtype.UUID     `json:"counterparty_account_id"`
+	CreatedAt             time.Time       `json:"created_at"`
+}

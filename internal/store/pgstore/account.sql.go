@@ -13,6 +13,17 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+const closeAccount = `-- name: CloseAccount :exec
+UPDATE account
+SET status = 'closed', closed_at = NOW()
+WHERE id = $1
+`
+
+func (q *Queries) CloseAccount(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, closeAccount, id)
+	return err
+}
+
 const createAccount = `-- name: CreateAccount :one
 INSERT INTO account (individual_holder_id, company_holder_id, holder_type)
 VALUES ($1, $2, $3)
@@ -27,6 +38,31 @@ type CreateAccountParams struct {
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (uuid.UUID, error) {
 	row := q.db.QueryRow(ctx, createAccount, arg.IndividualHolderID, arg.CompanyHolderID, arg.HolderType)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const createTransaction = `-- name: CreateTransaction :one
+INSERT INTO transaction (account_id, type, amount, counterparty_account_id)
+VALUES ($1, $2, $3, $4)
+RETURNING id
+`
+
+type CreateTransactionParams struct {
+	AccountID             uuid.UUID       `json:"account_id"`
+	Type                  TransactionType `json:"type"`
+	Amount                decimal.Decimal `json:"amount"`
+	CounterpartyAccountID pgtype.UUID     `json:"counterparty_account_id"`
+}
+
+func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, createTransaction,
+		arg.AccountID,
+		arg.Type,
+		arg.Amount,
+		arg.CounterpartyAccountID,
+	)
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
@@ -59,4 +95,38 @@ func (q *Queries) GetAccountByID(ctx context.Context, id uuid.UUID) (GetAccountB
 		&i.Status,
 	)
 	return i, err
+}
+
+const getAccountByIDForUpdate = `-- name: GetAccountByIDForUpdate :one
+SELECT id, balance, status 
+FROM account
+WHERE id = $1
+FOR UPDATE
+`
+
+type GetAccountByIDForUpdateRow struct {
+	ID      uuid.UUID       `json:"id"`
+	Balance decimal.Decimal `json:"balance"`
+	Status  AccountStatus   `json:"status"`
+}
+
+func (q *Queries) GetAccountByIDForUpdate(ctx context.Context, id uuid.UUID) (GetAccountByIDForUpdateRow, error) {
+	row := q.db.QueryRow(ctx, getAccountByIDForUpdate, id)
+	var i GetAccountByIDForUpdateRow
+	err := row.Scan(&i.ID, &i.Balance, &i.Status)
+	return i, err
+}
+
+const updateAccountBalance = `-- name: UpdateAccountBalance :exec
+UPDATE account SET balance = $2 WHERE id = $1
+`
+
+type UpdateAccountBalanceParams struct {
+	ID      uuid.UUID       `json:"id"`
+	Balance decimal.Decimal `json:"balance"`
+}
+
+func (q *Queries) UpdateAccountBalance(ctx context.Context, arg UpdateAccountBalanceParams) error {
+	_, err := q.db.Exec(ctx, updateAccountBalance, arg.ID, arg.Balance)
+	return err
 }
