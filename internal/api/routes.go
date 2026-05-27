@@ -25,6 +25,8 @@ func (api *Api) BindRoutes() {
 					r.Get("/{id}/balance", api.handleGetBalance)
 					r.Post("/{id}/deposit", api.handleDeposit)
 					r.Delete("/{id}", api.handleCloseAccount)
+					r.Post("/{id}/withdrawal", api.handleWithdraw)
+					r.Post("/transfer", api.handleTransfer)
 				})
 			})
 		})
